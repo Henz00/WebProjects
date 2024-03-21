@@ -1,0 +1,14 @@
+body {
+    background-color: white;
+}
+
+#inputForm {
+    display:grid;
+    grid-auto-flow: row;
+    margin: 1rem;
+    gap: 1rem;
+}
+
+button {
+    
+}

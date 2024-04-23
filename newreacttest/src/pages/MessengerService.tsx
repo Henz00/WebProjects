@@ -13,8 +13,18 @@ const MessengerService = () => {
 				<p className="outgoing">Meeeen det vidste vi jo godt</p>
 			</div>
 			<div className="messagebox">
-				<img src="../assets/react.svg"></img>
-				<p>Aa</p>
+				<img src="/src/assets/barrel.png" alt="first image"></img>
+				<div
+					className="message"
+					role="textbox"
+					contentEditable="true"
+					aria-placeholder="Send a message"
+					aria-multiline="true"
+					spellCheck="true"
+					tabIndex={0}
+				>
+					Aa
+				</div>
 			</div>
 		</div>
 	);

@@ -26,6 +26,11 @@
   gap: 3rem;
 }
 
+img {
+  width: 2rem;
+  height: 2rem;
+}
+
 .test {
   display: flex;
   flex-wrap: wrap;
@@ -104,4 +109,12 @@
   display:flex;
   flex-direction: row;
   gap: 1rem;
+  align-items: center;
+}
+
+.message {
+  display:flex;
+  background-color: #444;
+  max-width: 16rem;
+  width: 16rem;
 }

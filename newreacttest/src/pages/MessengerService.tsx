@@ -1,53 +1,62 @@
-import { useState , useEffect } from "react";
+import { useState, useEffect } from "react";
+import { io } from "socket.io-client";
 
 const MessengerService = () => {
 	const [title] = useState("RTW project group");
+	const socket = io("ws://localhost:8080");
+
+	socket.on("message", (text) => {
+		const el = document.createElement("div");
+		el.innerHTML = text;
+		document.querySelector(".innerchatbox")?.appendChild(el);
+	});
 
 	useEffect(() => {
 		const handleOnSubmit = async () => {
 			let data = (document.getElementById("message") as HTMLInputElement).value;
 			console.log(data);
-			let result = await fetch(
-			'http://localhost:5000/register', {
+			socket.emit("message", data);
+			let result = await fetch("http://localhost:5000/register", {
 				method: "post",
 				body: JSON.stringify({ data }),
 				headers: {
-					'Content-Type': 'application/json'
-				}
+					"Content-Type": "application/json",
+				},
 			});
-	
+
 			result = await result.json();
 		};
-	
+
 		let enterPressed = false;
 
-		const handleKeyDown = (e:KeyboardEvent) => {
-			if(e.key === "Enter" && !enterPressed) {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Enter" && !enterPressed) {
 				enterPressed = true;
-				const messageInput = (document.getElementById("message") as HTMLInputElement);
-        		if (messageInput && messageInput.value.trim() !== "") {
-          			handleOnSubmit();
-          			e.preventDefault();
+				const messageInput = document.getElementById(
+					"message"
+				) as HTMLInputElement;
+				if (messageInput && messageInput.value.trim() !== "") {
+					handleOnSubmit();
+					e.preventDefault();
 					messageInput.value = "";
-        		}
+				}
 			}
 		};
 
-		const handleKeyUp = (e:KeyboardEvent) => {
+		const handleKeyUp = (e: KeyboardEvent) => {
 			if (e.key === "Enter") {
-			  enterPressed = false;
+				enterPressed = false;
 			}
-		  };
+		};
 
 		const messageInput = document.getElementById("message");
-    	messageInput?.addEventListener("keydown", handleKeyDown);
-    	messageInput?.addEventListener("keyup", handleKeyUp);
+		messageInput?.addEventListener("keydown", handleKeyDown);
+		messageInput?.addEventListener("keyup", handleKeyUp);
 
 		return () => {
 			messageInput?.removeEventListener("keydown", handleKeyDown);
 			messageInput?.removeEventListener("keyup", handleKeyUp);
-		  };
-
+		};
 	}, []);
 
 	return (
@@ -61,7 +70,7 @@ const MessengerService = () => {
 			</div>
 			<div className="messagebox">
 				<img src="/src/assets/barrel.png" alt="first image"></img>
-				<input 
+				<input
 					type="text"
 					placeholder="Aa..."
 					id="message"
@@ -72,12 +81,9 @@ const MessengerService = () => {
 					aria-multiline="true"
 					spellCheck="true"
 					tabIndex={0}
-					suppressContentEditableWarning={true} />
-				<div
-					id="sendMessageButton"
-				>
-					Button
-				</div>
+					suppressContentEditableWarning={true}
+				/>
+				<div id="sendMessageButton">Button</div>
 			</div>
 		</div>
 	);

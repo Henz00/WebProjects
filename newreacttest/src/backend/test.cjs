@@ -44,8 +44,33 @@ async function InsertMultipleMessages(messages) {
   }
 }
 
+async function GetMessages() {
+  try {
+    await client.connect();
+
+    let db = client.db("Messages");
+
+    const docs = await db.collection("Chatrecords").find({}).toArray();
+    return docs;
+  } catch (e) {
+    throw e;
+  } finally {
+    await client.close();
+  }
+}
+
 app.get("/", (req, res) => {
   res.send("App is Working");
+});
+
+app.get("/updateMessages", async (req, res) => {
+  try {
+    let data = await GetMessages();
+    res.send(data);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Something went wrong");
+  }
 });
 
 app.post("/register", async (req, res) => {

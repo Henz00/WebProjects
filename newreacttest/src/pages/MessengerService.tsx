@@ -8,17 +8,36 @@ const MessengerService = () => {
 	socket.on("message", (text) => {
 		const el = document.createElement("div");
 		el.innerHTML = text;
+		el.classList.add("outgoing");
 		document.querySelector(".innerchatbox")?.appendChild(el);
 	});
+
+	useEffect(() => {
+		const getData = async () => {
+		  try {
+			let response = await fetch("http://localhost:5000/updateMessages");
+			if (!response.ok) {
+			  throw new Error("Failed to fetch data");
+			}
+			let result = await response.json();
+			console.log(result);
+		  } catch (error) {
+			console.error(error);
+		  }
+		};
+		
+		getData();
+	  }, []);
 
 	useEffect(() => {
 		const handleOnSubmit = async () => {
 			let data = (document.getElementById("message") as HTMLInputElement).value;
 			console.log(data);
+			let time = new Date(Date.now());
 			socket.emit("message", data);
 			let result = await fetch("http://localhost:5000/register", {
 				method: "post",
-				body: JSON.stringify({ data }),
+				body: JSON.stringify({ time, data }),
 				headers: {
 					"Content-Type": "application/json",
 				},

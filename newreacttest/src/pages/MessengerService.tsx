@@ -1,51 +1,44 @@
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
+import { fetchMessages , sendMessage } from "../backend/messageService.cjs";
 
 const MessengerService = () => {
 	const [title] = useState("RTW project group");
 	const socket = io("ws://localhost:8080");
 
-	socket.on("message", (text) => {
-		const el = document.createElement("div");
-		el.innerHTML = text;
-		el.classList.add("outgoing");
-		document.querySelector(".innerchatbox")?.appendChild(el);
-	});
-
-	useEffect(() => {
-		const getData = async () => {
-		  try {
-			let response = await fetch("http://localhost:5000/updateMessages");
-			if (!response.ok) {
-			  throw new Error("Failed to fetch data");
-			}
-			let result = await response.json();
-			console.log(result);
-		  } catch (error) {
-			console.error(error);
-		  }
+	if(sessionStorage.getItem("session_id") == null){
+		let name = prompt("Please enter a username");
+		sessionStorage.setItem("session_name", (name as string));
+		socket.on("connect", () => {
+			sessionStorage.setItem("session_id", (socket.id as string));
+		  });
 		};
+
+		let exist = socket.hasListeners("message");
+		if(!exist) {
+			socket.on("message", (data) => {
+				const el = document.createElement("div");
+				if(data.session_id == sessionStorage.getItem("session_id")){
+					el.innerHTML = `${data.session_name}: ${data.text}`;
+					el.classList.add("outgoing");
+					document.querySelector(".innerchatbox")?.prepend(el);
+				} else {
+					el.innerHTML = `${data.session_name}: ${data.text}`;
+					el.classList.add("incoming");
+					document.querySelector(".innerchatbox")?.prepend(el);
+				}
+				
+			  });
+		}
+
 		
-		getData();
+	
+	useEffect(() => {
+		fetchMessages();
 	  }, []);
 
+	  
 	useEffect(() => {
-		const handleOnSubmit = async () => {
-			let data = (document.getElementById("message") as HTMLInputElement).value;
-			console.log(data);
-			let time = new Date(Date.now());
-			socket.emit("message", data);
-			let result = await fetch("http://localhost:5000/register", {
-				method: "post",
-				body: JSON.stringify({ time, data }),
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
-
-			result = await result.json();
-		};
-
 		let enterPressed = false;
 
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -55,7 +48,7 @@ const MessengerService = () => {
 					"message"
 				) as HTMLInputElement;
 				if (messageInput && messageInput.value.trim() !== "") {
-					handleOnSubmit();
+					sendMessage(socket);
 					e.preventDefault();
 					messageInput.value = "";
 				}
@@ -84,8 +77,6 @@ const MessengerService = () => {
 				<h1>{title}</h1>
 			</div>
 			<div className="innerchatbox">
-				<p className="incoming">Og det er han jo</p>
-				<p className="outgoing">Meeeen det vidste vi jo godt</p>
 			</div>
 			<div className="messagebox">
 				<img src="/src/assets/barrel.png" alt="first image"></img>
@@ -93,7 +84,7 @@ const MessengerService = () => {
 					type="text"
 					placeholder="Aa..."
 					id="message"
-					className="message"
+					className="inputMessage"
 					role="textbox"
 					contentEditable="true"
 					aria-placeholder="Send a message"
